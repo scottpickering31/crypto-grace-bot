@@ -5,11 +5,11 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "devStart": "pm2 start ecosystem.config.js --env dev --watch",
-    "prodStart": "pm2 start ecosystem.config.js --env prod --watch",
-    "reload": "pm2 reload ecosystem.config.js",
-    "stop": "pm2 stop ecosystem.config.js",
-    "end": "pm2 delete ecosystem.config.js"
+    "devStart": "pm2 start ecosystem.config.cjs --env dev --watch",
+    "prodStart": "pm2 start ecosystem.config.cjs --env prod --watch",
+    "reload": "pm2 reload ecosystem.config.cjs",
+    "stop": "pm2 stop ecosystem.config.cjs",
+    "end": "pm2 delete ecosystem.config.cjs"
   },
   "author": "",
   "license": "ISC",
