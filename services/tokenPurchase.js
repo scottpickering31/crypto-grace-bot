@@ -1,5 +1,4 @@
-import { botBeginCountdown } from "../integration/botBeginCountdown.js";
-import fetch from "node-fetch";
+const axios = require("axios");
 
 const tokenPurchase = (token) => {
   console.log("Buying Token...");
@@ -13,29 +12,27 @@ const tokenPurchase = (token) => {
 
   const sendTelegramMessage = async () => {
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const response = await axios.post(url, {
         chat_id: process.env.TELEGRAM_CHAT_ID,
         text: message,
-      }),
-    });
+      });
 
-    if (response.ok) {
-      console.log("Telegram message sent successfully!");
-    } else {
-      console.error("Failed to send Telegram message:", response.statusText);
+      if (response.status === 200) {
+        console.log("Telegram message sent successfully!");
+      } else {
+        console.error("Failed to send Telegram message:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error sending Telegram message:", error.message);
     }
   };
 
   setTimeout(() => {
     console.log("Token Purchased!");
     sendTelegramMessage();
-    // setTimeout(() => {
-    //   console.log("Searching for new tokens!" + botBeginCountdown());
-    // });
+    // bot begin countdown here
   }, 500);
 };
 
-export { tokenPurchase };
+module.exports = { tokenPurchase };

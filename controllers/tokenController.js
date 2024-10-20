@@ -1,25 +1,23 @@
-import fetch from "node-fetch";
-import { tokenInsert } from "../integration/database/tokenInsert.js";
-import db from "../integration/database/db.js";
-import { clearExistingInterval } from "../integration/intervalManager.js";
+const axios = require('axios');
+const { tokenInsert } = require('../integration/database/tokenInsert.js');
+const db = require('../integration/database/db.js');
+const { clearExistingInterval } = require('../integration/intervalManager.js');
 
 const fetchTokensData = async () => {
   try {
     const [latestResponse, topResponse] = await Promise.all([
-      fetch("https://api.dexscreener.com/token-boosts/latest/v1"),
-      fetch("https://api.dexscreener.com/token-boosts/top/v1"),
+      axios.get('https://api.dexscreener.com/token-boosts/latest/v1'),
+      axios.get('https://api.dexscreener.com/token-boosts/top/v1'),
     ]);
 
-    const [latestData, topData] = await Promise.all([
-      latestResponse.json(),
-      topResponse.json(),
-    ]);
+    const latestData = latestResponse.data;
+    const topData = topResponse.data;
 
     return [...latestData, ...topData].filter(
-      (item) => item.totalAmount >= 500 && item.chainId === "solana"
+      (item) => item.totalAmount >= 500 && item.chainId === 'solana'
     );
   } catch (error) {
-    console.error("Error fetching token data from Dexscreener:", error);
+    console.error('Error fetching token data from Dexscreener:', error);
     throw error;
   }
 };
@@ -33,7 +31,7 @@ const processTokenData = async (filteredData) => {
   return new Promise((resolve, reject) => {
     db.query(query, [tokenAddresses], async (err, results) => {
       if (err) {
-        console.error("Error querying the database:", err);
+        console.error('Error querying the database:', err);
         reject(err);
         return;
       }
@@ -57,11 +55,10 @@ const processTokenData = async (filteredData) => {
 
 const fetchTokenDetails = async (tokenAddress) => {
   try {
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`
     );
-    const data = await response.json();
-    return data.pairs;
+    return response.data.pairs;
   } catch (error) {
     console.error(`Error fetching token details for ${tokenAddress}:`, error);
     throw error;
@@ -79,7 +76,7 @@ const startBot = async () => {
 
         if (pairs && pairs.length > 0) {
           const poolWithHighestLiquidity = pairs.reduce((acc, pair) => {
-            if (pair.chainId === "solana" && pair.dexId === "raydium") {
+            if (pair.chainId === 'solana' && pair.dexId === 'raydium') {
               return !acc || pair.liquidity.usd > acc.liquidity.usd
                 ? pair
                 : acc;
@@ -117,10 +114,10 @@ const startBot = async () => {
           console.log(`Invalid token data for ${token.tokenAddress}`);
         }
       }
-      console.log("Data processed successfully");
+      console.log('Data processed successfully');
     }
   } catch (error) {
-    console.error("Error in startBot:", error);
+    console.error('Error in startBot:', error);
   }
 };
 
@@ -133,7 +130,7 @@ const flushBot = async () => {
 
       if (pairs && pairs.length > 0) {
         const poolWithHighestLiquidity = pairs.reduce((acc, pair) => {
-          if (pair.chainId === "solana" && pair.dexId === "raydium") {
+          if (pair.chainId === 'solana' && pair.dexId === 'raydium') {
             return !acc || pair.liquidity.usd > acc.liquidity.usd ? pair : acc;
           }
           return acc;
@@ -150,19 +147,19 @@ const flushBot = async () => {
         console.log(`Invalid token data received for: ${token.tokenAddress}`);
       }
     }
-    console.log("Flush process completed");
+    console.log('Flush process completed');
   } catch (error) {
-    console.error("Error in flushBot:", error);
+    console.error('Error in flushBot:', error);
   }
 };
 
 const stopBot = () => {
   clearExistingInterval();
-  console.log("Bot stopped successfully");
+  console.log('Bot stopped successfully');
 };
 
 const sellToken = () => {
   // Implement logic for manual sell (if needed)
 };
 
-export { startBot, stopBot, sellToken, flushBot };
+module.exports = { startBot, stopBot, sellToken, flushBot };

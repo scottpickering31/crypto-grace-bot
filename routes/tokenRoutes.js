@@ -1,10 +1,10 @@
-import express from "express";
-import { sellToken } from "../controllers/tokenController.js";
-import {
+const express = require("express");
+const { sellToken } = require("../controllers/tokenController.js");
+const {
   startCountdown,
   flushBotCountdown,
   stopBotCountdown,
-} from "../integration/botBeginCountdown.js";
+} = require("../integration/botBeginCountdown.js");
 
 const router = express.Router();
 
@@ -13,4 +13,4 @@ router.post("/stop-bot", stopBotCountdown);
 router.post("/sell-tokens", sellToken);
 router.post("/flush-bot", flushBotCountdown);
 
-export default router;
+module.exports = router;

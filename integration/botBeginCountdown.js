@@ -1,6 +1,6 @@
-import { setIntervalId, clearExistingInterval } from "./intervalManager.js";
-import { startBot, flushBot } from "../controllers/tokenController.js";
-import { tgbot } from "../integration/telegramApi/telegramBot.js";
+const { setIntervalId, clearExistingInterval } = require("./intervalManager");
+const { startBot, flushBot } = require("../controllers/tokenController");
+const { tgbot } = require("../integration/telegramApi/telegramBot");
 
 let isBotRunning = false;
 let countdownTimeoutId = null;
@@ -58,6 +58,7 @@ const flushBotCountdown = () => {
 
   const id = setInterval(() => {
     if (count < maxCount) {
+      console.log("flushBot:", flushBot);
       flushBot();
       count++;
       const message = `FlushBot executed ${count} times`;
@@ -79,7 +80,7 @@ const startCountdown = () => {
   botBeginCountdown(3);
 };
 
-export {
+module.exports = {
   startCountdown,
   stopBotCountdown,
   flushBotCountdown,

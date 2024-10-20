@@ -1,13 +1,17 @@
 module.exports = {
   apps: [
     {
-      name: "app1",
+      name: "crypto-grace-bot",
       script: "./app.js",
-      env_production: {
-        NODE_ENV: "production",
+      watch: true,
+      env: {
+        NODE_ENV: "development",
       },
       env_development: {
         NODE_ENV: "development",
+      },
+      env_production: {
+        NODE_ENV: "production",
       },
     },
   ],

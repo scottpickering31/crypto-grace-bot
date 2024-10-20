@@ -1,16 +1,22 @@
 let intervalId = null;
 
-export const setIntervalId = (id) => {
+const setIntervalId = (id) => {
   intervalId = id;
 };
 
-export const clearExistingInterval = () => {
+const clearExistingInterval = () => {
   if (intervalId !== null) {
     clearInterval(intervalId);
     intervalId = null;
   }
 };
 
-export const getIntervalId = () => {
+const getIntervalId = () => {
   return intervalId;
+};
+
+module.exports = {
+  setIntervalId,
+  clearExistingInterval,
+  getIntervalId,
 };

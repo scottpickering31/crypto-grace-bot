@@ -1,5 +1,5 @@
-import { tgbot } from "./telegramBot.js";
-import fetch from "node-fetch";
+const { tgbot } = require("./telegramBot");
+const axios = require("axios");
 
 // Define the inline keyboard for the buttons
 const keyboard = {
@@ -14,14 +14,13 @@ const keyboard = {
         { text: "Sell Tokens", callback_data: "sell-tokens" },
       ],
     ],
-    one_time_keyboard: false, // Keep the keyboard sticky
-    resize_keyboard: true, // Make it responsive to fit the screen
   },
 };
 
 // Listen for messages (optional, e.g., when someone types /start)
 tgbot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
+  console.log("Received /start command from chat ID:", chatId); // Debugging line
   tgbot.sendMessage(chatId, "Choose an action:", keyboard);
 });
 
@@ -53,8 +52,7 @@ tgbot.on("callback_query", async (callbackQuery) => {
 
   try {
     // Send a POST request to the API
-    const response = await fetch(apiUrl, { method: "POST" });
-    const result = await response.json();
+    const response = await axios.post(apiUrl);
 
     // Send a message back to the user and keep the keyboard visible
     tgbot.sendMessage(

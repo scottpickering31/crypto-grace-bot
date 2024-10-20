@@ -1,7 +1,6 @@
-// tokenInsert.js
-import db from "./db.js";
-import { clearExistingInterval } from "../intervalManager.js";
-import { tokenPurchase } from "../../services/tokenPurchase.js";
+const db = require("./db");
+const { clearExistingInterval } = require("../intervalManager");
+const { tokenPurchase } = require("../../services/tokenPurchase");
 
 const tokenInsert = (token, triggerPurchase = false) => {
   const {
@@ -59,4 +58,4 @@ const tokenInsert = (token, triggerPurchase = false) => {
   );
 };
 
-export { tokenInsert };
+module.exports = { tokenInsert };

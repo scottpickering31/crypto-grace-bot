@@ -1,6 +1,7 @@
-import express from "express";
-import router from "./routes/tokenRoutes.js";
-import db from "./integration/database/db.js";
+const express = require("express");
+const router = require("./routes/tokenRoutes.js");
+const db = require("./integration/database/db.js");
+require("./integration/telegramApi/telegramButtons.js");
 
 // Create express app
 const app = express();
