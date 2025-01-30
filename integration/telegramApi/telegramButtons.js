@@ -8,12 +8,15 @@ const keyboard = {
       [
         { text: "Start Bot", callback_data: "start-bot" },
         { text: "Stop Bot", callback_data: "stop-bot" },
+        { text: "Bot Still Running?", callback_data: "bot-running" },
       ],
       [
         { text: "Flush Bot", callback_data: "flush-bot" },
         { text: "Sell Tokens", callback_data: "sell-tokens" },
       ],
     ],
+    one_time_keyboard: true,
+    persistent: true,
   },
 };
 
@@ -44,6 +47,9 @@ tgbot.on("callback_query", async (callbackQuery) => {
       break;
     case "sell-tokens":
       apiUrl = "http://localhost:3000/api/sell-tokens";
+      break;
+    case "bot-running":
+      apiUrl = "http://localhost:3000/api/bot-running";
       break;
 
     default:

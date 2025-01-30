@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const router = require("./routes/tokenRoutes.js");
 const db = require("./integration/database/db.js");
 require("./integration/telegramApi/telegramButtons.js");
