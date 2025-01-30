@@ -37,19 +37,19 @@ tgbot.on("callback_query", async (callbackQuery) => {
   // Map the callback actions to API URLs
   switch (action) {
     case "start-bot":
-      apiUrl = "http://localhost:3000/api/start-bot";
+      apiUrl = "http://212.227.125.88/api/start-bot";
       break;
     case "stop-bot":
-      apiUrl = "http://localhost:3000/api/stop-bot";
+      apiUrl = "http://212.227.125.88/api/stop-bot";
       break;
     case "flush-bot":
-      apiUrl = "http://localhost:3000/api/flush-bot";
+      apiUrl = "http://212.227.125.88/api/flush-bot";
       break;
     case "sell-tokens":
-      apiUrl = "http://localhost:3000/api/sell-tokens";
+      apiUrl = "http://212.227.125.88/api/sell-tokens";
       break;
     case "bot-running":
-      apiUrl = "http://localhost:3000/api/bot-running";
+      apiUrl = "http://212.227.125.88/api/bot-running";
       break;
 
     default:
