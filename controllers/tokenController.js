@@ -112,7 +112,7 @@ const startBot = async () => {
           if (
             poolWithHighestLiquidity &&
             !poolWithHighestLiquidity.moonshot &&
-            time_difference <= 30 &&
+            time_difference <= 20 &&
             poolWithHighestLiquidity.priceUsd > 0.000045 &&
             poolWithHighestLiquidity.priceUsd < 0.000135
           ) {
