@@ -5,7 +5,6 @@ const { clearExistingInterval } = require("../integration/intervalManager.js");
 const {
   telegramMessage,
 } = require("../integration/telegramApi/telegramMessage.js");
-const { currentDate } = require("../utils/currentDate.js");
 const { getBotStartTime } = require("../utils/sharedTimeState.js");
 
 const fetchTokensData = async () => {
