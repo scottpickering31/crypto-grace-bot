@@ -31,7 +31,7 @@ const botBeginCountdown = (num) => {
         console.log("startBot function execution stopped.");
         clearExistingInterval();
       }
-    }, 3500);
+    }, 10000);
     setIntervalId(id);
   }
 };

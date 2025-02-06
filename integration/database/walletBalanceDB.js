@@ -8,94 +8,72 @@ async function fetchSolPrice() {
     "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd";
   try {
     const response = await axios.get(url);
-    const solPrice = response.data.solana.usd;
-    return solPrice;
+    return response.data.solana.usd;
   } catch (error) {
     console.error("Error fetching SOL price:", error.message);
     throw new Error("Unable to fetch SOL price");
   }
 }
 
-// Function to store the wallet balance
+// Function to store the wallet balance before a purchase
 async function storeWalletBalanceDBPre(
   walletBalanceInLamports,
   token,
   transactionID
 ) {
   try {
-    const walletBalanceInSol = walletBalanceInLamports / 1_000_000_000; // Convert lamports to SOL
-    const balanceInLamports = walletBalanceInLamports;
-
-    // Fetch the current SOL price
+    const walletBalanceInSol = walletBalanceInLamports / 1_000_000_000;
     const solPrice = await fetchSolPrice();
-
-    // Calculate the wallet balance in USD
     const walletBalanceInUsd = walletBalanceInSol * solPrice;
-
-    const tokenAddress = token.baseToken.address; // Assuming this is the token address from the `token` object
+    const tokenAddress = token.baseToken.address;
 
     const message = `Current Wallet balance before purchase is ${walletBalanceInSol.toFixed(
       2
     )} SOL or ${walletBalanceInUsd.toFixed(2)} USD`;
     telegramMessage(message);
-    console.log(`Wallet Balance: ${walletBalanceInSol.toFixed(2)} SOL`);
-    console.log(`Wallet Balance in USD: $${walletBalanceInUsd.toFixed(2)}`);
-    console.log(`Token Address: ${tokenAddress}`);
-    console.log(`Transaction ID: ${transactionID}`);
 
-    // Upsert the balance in the database for the given token_address
+    console.log("Updating wallet balance (pre-purchase)...");
+
     const query = `
-  UPDATE wallet_balance
-      SET
-      transaction_id_buy = ?,
-        balance_usd_pre = ?,
-        balance_sol_pre = ?,
-        balance_lamports_pre = ?
+      UPDATE wallet_balance
+      SET transaction_id_buy = ?, balance_usd_pre = ?, balance_sol_pre = ?, balance_lamports_pre = ?
       WHERE token_address = ?;
     `;
 
-    // Await the query execution
-    db.query(query, [
+    await db.query(query, [
       transactionID,
       walletBalanceInUsd.toFixed(2),
       walletBalanceInSol.toFixed(2),
-      balanceInLamports,
+      walletBalanceInLamports,
       tokenAddress,
     ]);
 
-    console.log("Wallet balance inserted/updated successfully:");
+    console.log("Wallet balance updated successfully (pre-purchase).");
   } catch (error) {
-    console.error("Error updating wallet balance:", error.message);
-    if (error.response) {
-      console.error("API Response Error:", error.response.data);
-    }
+    console.error(
+      "Error updating wallet balance (pre-purchase):",
+      error.message
+    );
   }
 }
 
+// Function to store the wallet balance after a purchase
 async function storeWalletBalanceDBPost(walletBalanceInLamports, token) {
   try {
-    const walletBalanceInSol = walletBalanceInLamports / 1000000000;
-
-    // Fetch the current SOL price
+    const walletBalanceInSol = walletBalanceInLamports / 1_000_000_000;
     const solPrice = await fetchSolPrice();
-
-    // Calculate the wallet balance in USD
     const walletBalanceInUsd = walletBalanceInSol * solPrice;
+    const tokenAddress = token.baseToken.address;
 
-    const tokenAddress = token.baseToken.address; // Assuming this is the token address from the `token` object
+    console.log("Updating wallet balance (post-purchase)...");
 
-    // Update the balance in your database for the existing token_address
     const query = `
       UPDATE wallet_balance
-      SET 
-        balance_usd_post = ?,
-        balance_sol_post = ?,
-        balance_lamports_post = ?
+      SET balance_usd_post = ?, balance_sol_post = ?, balance_lamports_post = ?
       WHERE token_address = ?;
     `;
 
-    // Execute the query
-    const [result] = db.query(query, [
+    const [result] = await db.query(query, [
       walletBalanceInUsd.toFixed(2),
       walletBalanceInSol.toFixed(2),
       walletBalanceInLamports,
@@ -107,25 +85,24 @@ async function storeWalletBalanceDBPost(walletBalanceInLamports, token) {
         `No matching token_address found for ${tokenAddress} in wallet_balance.`
       );
     } else {
-      console.log("Wallet balance updated in the database successfully.");
+      console.log("Wallet balance updated successfully (post-purchase). ");
     }
   } catch (error) {
-    console.error("Error storing wallet balance:", error.message);
-    if (error.response) {
-      console.error("API Response Error:", error.response.data);
-    }
+    console.error(
+      "Error updating wallet balance (post-purchase):",
+      error.message
+    );
   }
 }
 
+// Function to calculate and store PNL (Profit and Loss)
 async function storeWalletBalanceDBPNL(token) {
   try {
-    const tokenAddress = token.baseToken.address; // Assuming this is the token address from the `token` object
+    const tokenAddress = token.baseToken.address;
 
-    // Fetch the balance_usd_pre and balance_usd_post from the wallet_balance table
+    console.log("Fetching pre and post balance for PNL calculation...");
     const query = `SELECT balance_usd_pre, balance_usd_post FROM wallet_balance WHERE token_address = ?`;
-
-    // Execute the query
-    const [rows] = db.execute(query, [tokenAddress]);
+    const [rows] = await db.query(query, [tokenAddress]);
 
     if (rows.length === 0) {
       console.warn(
@@ -134,59 +111,33 @@ async function storeWalletBalanceDBPNL(token) {
       return;
     }
 
-    // Calculate the PNL (Profit and Loss)
     const { balance_usd_pre, balance_usd_post } = rows[0];
-    const pnlUsd = balance_usd_post - balance_usd_pre; // PNL in USD
+    const pnlUsd = balance_usd_post - balance_usd_pre;
+    const pnlPercentage = ((pnlUsd / balance_usd_pre) * 100).toFixed(2);
 
-    // Calculate the PNL percentage
-    const pnlPercentage = ((pnlUsd / balance_usd_pre) * 100).toFixed(2); // PNL Percentage
-
-    const message = `${token.baseToken.address} sold successfully, PNL from this transaction is ${pnlUsd} and PNL percentage of initial input amount is ${pnlPercentage}`;
+    const message = `${token.baseToken.address} sold successfully, PNL: ${pnlUsd} USD (${pnlPercentage}%)`;
     telegramMessage(message);
 
-    // Update the PNL values in the database for the corresponding token_address
+    console.log("Updating PNL in the database...");
     const updateQuery = `
       UPDATE wallet_balance
       SET PNL_usd = ?, PNL_PERCENTAGE = ?
       WHERE token_address = ?;
     `;
-
-    // Execute the update query
-    const [result] = db.query(updateQuery, [
+    await db.query(updateQuery, [
       pnlUsd.toFixed(2),
       pnlPercentage,
       tokenAddress,
     ]);
 
-    if (result.affectedRows === 0) {
-      console.warn(
-        `No matching token_address found for ${tokenAddress} in wallet_balance during PNL update.`
-      );
-    } else {
-      console.log("PNL updated in the database successfully.");
-    }
+    console.log("PNL updated successfully.");
   } catch (error) {
     console.error("Error calculating and storing PNL in DB:", error.message);
-    if (error.response) {
-      console.error("API Response Error:", error.response.data);
-    }
   }
 }
-
-// async function fetchWalletBalanceDB(token) {
-//   try {
-//     const query = `SELECT * FROM wallet_balance WHERE token_address = ${token.baseToken.address}`;
-//   } catch (error) {
-//     console.error(
-//       "Error querying fetchWalletBalance from Database",
-//       error.message
-//     );
-//   }
-// }
 
 module.exports = {
   storeWalletBalanceDBPre,
   storeWalletBalanceDBPost,
   storeWalletBalanceDBPNL,
-  // fetchWalletBalanceDB,
 };

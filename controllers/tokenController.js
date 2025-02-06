@@ -131,7 +131,7 @@ const startBot = async () => {
               )}`
             );
             clearExistingInterval();
-            tokenInsert(poolWithHighestLiquidity, false);
+            await tokenInsert(poolWithHighestLiquidity, false);
             break;
           }
         } else {

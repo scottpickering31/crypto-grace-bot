@@ -2,7 +2,7 @@ const db = require("./db");
 const { submitBuySwap } = require("../../services/submitBuySwap");
 const { telegramMessage } = require("../telegramApi/telegramMessage");
 
-const tokenInsert = (token, isFlush = true) => {
+const tokenInsert = async (token, isFlush = true) => {
   const {
     baseToken: { address: token_address, name: token_name },
     liquidity: { usd: token_liquidity },
@@ -18,7 +18,6 @@ const tokenInsert = (token, isFlush = true) => {
   const time_difference = Math.floor((currentTime - tokenTime) / (1000 * 60));
 
   const date = new Date();
-  date.setHours(date.getHours());
   const bought_at = date.toISOString().slice(0, 19).replace("T", " ");
 
   const tokenQuery = `
@@ -34,10 +33,9 @@ const tokenInsert = (token, isFlush = true) => {
     ON DUPLICATE KEY UPDATE 
       token_address = VALUES(token_address);`;
 
-  // Execute the token query
-  db.query(
-    tokenQuery,
-    [
+  try {
+    // Execute token query
+    await db.query(tokenQuery, [
       token_address,
       token_liquidity,
       current_price,
@@ -47,35 +45,27 @@ const tokenInsert = (token, isFlush = true) => {
       sell_price,
       time_difference,
       amount,
-    ],
-    (err) => {
-      if (err) {
-        console.error("Error inserting/updating token:", err);
-        telegramMessage(`Error inserting/updating token: ${err}`);
-        return;
-      }
+    ]);
 
-      // Only insert into wallet_balance if isFlush is false
-      if (!isFlush) {
-        db.query(walletBalanceQuery, [token_address, token_name], (err) => {
-          if (err) {
-            console.error("Error inserting into wallet_balance:", err);
-            telegramMessage(`Error inserting into wallet_balance: ${err}`);
-            return;
-          }
-          console.log("Wallet balance updated successfully.");
-        });
-      }
+    console.log(`✅ Token ${token_name} inserted/updated successfully.`);
 
-      // If isFlush is false, proceed with submitting the buy swap
-      if (!isFlush) {
-        console.log(
-          `Trigger purchase activated on token ${token.baseToken.name}, it has ${token.boosts.active} boosts!`
-        );
-        submitBuySwap(token);
-      }
+    // Only insert into wallet_balance if isFlush is false
+    if (!isFlush) {
+      await db.query(walletBalanceQuery, [token_address, token_name]);
+      console.log(`✅ Wallet balance updated for ${token_name}.`);
     }
-  );
+
+    // If isFlush is false, proceed with submitting the buy swap
+    if (!isFlush) {
+      console.log(
+        `🚀 Trigger purchase activated on token ${token_name}, it has ${amount} boosts!`
+      );
+      submitBuySwap(token);
+    }
+  } catch (err) {
+    console.error("❌ Error inserting/updating token:", err);
+    telegramMessage(`Error inserting/updating token: ${err.message}`);
+  }
 };
 
 module.exports = { tokenInsert };
