@@ -70,6 +70,7 @@ const fetchTokenDetails = async (tokenAddress) => {
 };
 
 const startBot = async () => {
+  console.log("we have got to TokenController.js");
   const botStartTime = getBotStartTime();
 
   if (!botStartTime) {

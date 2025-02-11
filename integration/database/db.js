@@ -7,8 +7,9 @@ const db = mysql.createPool({
   database: process.env.DB_DATABASE,
   port: process.env.DB_PORT,
   waitForConnections: true, // Wait instead of throwing errors if all connections are in use
-  connectionLimit: 10, // Max number of connections
+  connectionLimit: 20, // Max number of connections
   queueLimit: 0, // No limit on waiting queries
+  connectTimeout: 60000,
 });
 
 db.on("error", (err) => {

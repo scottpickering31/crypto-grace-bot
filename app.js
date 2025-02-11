@@ -4,17 +4,26 @@ const router = require("./routes/tokenRoutes.js");
 const db = require("./integration/database/db.js");
 require("./integration/telegramApi/telegramButtons.js");
 
-// Create express app
 const app = express();
 const PORT = process.env.PORT;
 
 app.use(express.json());
-
 app.use("/api", router);
 
-db.connect();
+// Test database connection before starting the server
+async function testDbConnection() {
+  try {
+    await db.query("SELECT 1"); // Simple query to check if DB is accessible
+    console.log("✅ Database connection successful");
+  } catch (err) {
+    console.error("❌ Database connection failed:", err);
+    process.exit(1); // Exit the app if DB connection fails
+  }
+}
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Start server only after verifying DB connection
+testDbConnection().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+  });
 });
