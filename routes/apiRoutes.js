@@ -1,7 +1,9 @@
 const axios = require("axios");
 
+const baseURL = process.env.API_BASE_URL;
+
 const apiRoutes = async (route) => {
-  const url = `http://localhost:3000/api/${route}`;
+  const url = `${baseURL}/api/${route}`;
   try {
     await axios.post(url);
     console.log(`Successfully called route: ${url}`);

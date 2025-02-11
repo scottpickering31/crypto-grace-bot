@@ -33,23 +33,24 @@ tgbot.on("callback_query", async (callbackQuery) => {
   const action = callbackQuery.data;
 
   let apiUrl;
+  const baseURL = process.env.API_BASE_URL;
 
   // Map the callback actions to API URLs
   switch (action) {
     case "start-bot":
-      apiUrl = "http://localhost:3000/api/start-bot";
+      apiUrl = `${baseURL}/api/start-bot`;
       break;
     case "stop-bot":
-      apiUrl = "http://localhost:3000/api/stop-bot";
+      apiUrl = `${baseURL}/api/stop-bot`;
       break;
     case "flush-bot":
-      apiUrl = "http://localhost:3000/api/flush-bot";
+      apiUrl = `${baseURL}/api/flush-bot`;
       break;
     case "sell-tokens":
-      apiUrl = "http://localhost:3000/api/sell-tokens";
+      apiUrl = `${baseURL}/api/sell-tokens`;
       break;
     case "bot-running":
-      apiUrl = "http://localhost:3000/api/bot-running";
+      apiUrl = `${baseURL}/api/bot-running`;
       break;
 
     default:
