@@ -20,7 +20,7 @@ const submitBuySwap = async (token) => {
   const walletBalance = await connection.getBalance(wallet.payer.publicKey);
   console.log("Wallet Balance (lamports):", walletBalance);
 
-  const amount = Math.floor(walletBalance);
+  const amount = Math.floor(walletBalance / 5);
   console.log("Amount to swap (lamports):", amount);
 
   try {
