@@ -28,6 +28,7 @@ const fetchTokensData = async () => {
 
 const processTokenData = async (filteredData) => {
   const tokenAddresses = filteredData.map((token) => token.tokenAddress);
+  console.log(tokenAddresses + " This is the token addresses part");
   const query = `
     SELECT token_address FROM tokens WHERE token_address IN (?)
   `;
@@ -80,6 +81,7 @@ const startBot = async () => {
 
   try {
     const filteredData = await fetchTokensData();
+    console.log(filteredData);
 
     // Deduplicate based on `tokenAddress`
     const uniqueTokens = filteredData.filter(
