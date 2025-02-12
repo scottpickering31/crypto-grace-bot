@@ -28,7 +28,6 @@ const fetchTokensData = async () => {
 
 const processTokenData = async (filteredData) => {
   const tokenAddresses = filteredData.map((token) => token.tokenAddress);
-  console.log(tokenAddresses + " This is the token addresses part");
   const query = `
     SELECT token_address FROM tokens WHERE token_address IN (?)
   `;
