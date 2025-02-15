@@ -28,16 +28,32 @@ const fetchTokensData = async () => {
 
 const processTokenData = async (filteredData) => {
   const tokenAddresses = filteredData.map((token) => token.tokenAddress);
+
+  if (tokenAddresses.length === 0) {
+    console.log("No tokens to check in the database.");
+    return [];
+  }
+
+  console.log("Checking these tokens in DB:", tokenAddresses);
+
   const query = `
-    SELECT token_address FROM tokens WHERE token_address IN (?)
+    SELECT token_address FROM tokens WHERE token_address IN (${tokenAddresses
+      .map(() => "?")
+      .join(",")})
   `;
 
   return new Promise((resolve, reject) => {
-    db.query(query, [tokenAddresses], async (err, results) => {
+    db.query(query, tokenAddresses, async (err, results) => {
       if (err) {
         console.error("Error querying the database:", err);
         reject(err);
         return;
+      }
+
+      console.log("DB Query Results:", results);
+
+      if (!results || results.length === 0) {
+        console.log("No existing tokens found in DB.");
       }
 
       const existingTokens = new Set(results.map((row) => row.token_address));
@@ -52,6 +68,8 @@ const processTokenData = async (filteredData) => {
           );
         }
       }
+
+      console.log("Tokens to be processed:", tokensToProcess);
       resolve(tokensToProcess);
     });
   });
@@ -89,6 +107,8 @@ const startBot = async () => {
     );
 
     const tokensToProcess = await processTokenData(uniqueTokens);
+    console.log("DB Query Results:", results);
+
     console.log("Tokens to process: THIS IS SECOND", tokensToProcess);
 
     if (tokensToProcess.length > 0) {
@@ -114,7 +134,7 @@ const startBot = async () => {
           if (
             poolWithHighestLiquidity &&
             !poolWithHighestLiquidity.moonshot &&
-            time_difference <= 20 &&
+            time_difference <= 180 &&
             poolWithHighestLiquidity.priceUsd > 0.000045 &&
             poolWithHighestLiquidity.priceUsd < 0.000135
           ) {
