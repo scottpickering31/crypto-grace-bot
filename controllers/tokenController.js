@@ -17,9 +17,15 @@ const fetchTokensData = async () => {
     const latestData = latestResponse.data;
     const topData = topResponse.data;
 
-    return [...latestData, ...topData].filter(
-      (item) => item.totalAmount >= 1000 && item.chainId === "solana"
-    );
+    // Merge and remove duplicates
+    const tokenMap = new Map();
+    [...latestData, ...topData].forEach((item) => {
+      if (item.totalAmount >= 1000 && item.chainId === "solana") {
+        tokenMap.set(item.tokenAddress, item);
+      }
+    });
+
+    return Array.from(tokenMap.values());
   } catch (error) {
     console.error("Error fetching token data from Dexscreener:", error);
     throw error;
@@ -42,37 +48,19 @@ const processTokenData = async (filteredData) => {
       .join(",")})
   `;
 
-  return new Promise((resolve, reject) => {
-    db.query(query, tokenAddresses, async (err, results) => {
-      if (err) {
-        console.error("Error querying the database:", err);
-        reject(err);
-        return;
-      }
+  try {
+    const [results] = await db.query(query, tokenAddresses);
+    console.log("DB Query Results:", results);
 
-      console.log("DB Query Results:", results);
+    const existingTokens = new Set(results.map((row) => row.token_address));
 
-      if (!results || results.length === 0) {
-        console.log("No existing tokens found in DB.");
-      }
-
-      const existingTokens = new Set(results.map((row) => row.token_address));
-      const tokensToProcess = [];
-
-      for (const token of filteredData) {
-        if (!existingTokens.has(token.tokenAddress)) {
-          tokensToProcess.push(token);
-        } else {
-          console.log(
-            `Token ${token.tokenAddress} already exists, skipping...`
-          );
-        }
-      }
-
-      console.log("Tokens to be processed:", tokensToProcess);
-      resolve(tokensToProcess);
-    });
-  });
+    return filteredData.filter(
+      (token) => !existingTokens.has(token.tokenAddress)
+    );
+  } catch (err) {
+    console.error("Error querying the database:", err);
+    throw err;
+  }
 };
 
 const fetchTokenDetails = async (tokenAddress) => {
