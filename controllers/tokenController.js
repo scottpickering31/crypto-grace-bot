@@ -20,7 +20,7 @@ const fetchTokensData = async () => {
     // Merge and remove duplicates
     const tokenMap = new Map();
     [...latestData, ...topData].forEach((item) => {
-      if (item.totalAmount >= 1000 && item.chainId === "solana") {
+      if (item.totalAmount >= 2000 && item.chainId === "solana") {
         tokenMap.set(item.tokenAddress, item);
       }
     });
