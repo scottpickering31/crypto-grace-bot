@@ -43,10 +43,7 @@ const processTokenData = async (filteredData) => {
   console.log("Checking these tokens in DB:", tokenAddresses);
 
   const query = `
-    SELECT token_address FROM tokens WHERE token_address IN (${tokenAddresses
-      .map(() => "?")
-      .join(",")})
-  `;
+    SELECT token_address FROM tokens WHERE token_address IN (?)`;
 
   try {
     const [results] = await db.query(query, tokenAddresses);
@@ -95,7 +92,7 @@ const startBot = async () => {
     );
 
     const tokensToProcess = await processTokenData(uniqueTokens);
-    console.log("DB Query Results:", results);
+    console.log("DB Query Results:", tokensToProcess);
 
     console.log("Tokens to process: THIS IS SECOND", tokensToProcess);
 
