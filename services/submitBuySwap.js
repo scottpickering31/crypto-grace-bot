@@ -1,6 +1,9 @@
 const { fetch } = require("cross-fetch");
 const { connection, wallet } = require("./config");
-const { VersionedTransaction } = require("@solana/web3.js");
+const {
+  VersionedTransaction,
+  ComputeBudgetProgram,
+} = require("@solana/web3.js");
 const {
   telegramMessage,
 } = require("../integration/telegramApi/telegramMessage");
@@ -11,7 +14,6 @@ const {
 
 const submitBuySwap = async (token) => {
   console.log("Starting submitBuySwap for token:", token.baseToken.name);
-
   const inputMint = `So11111111111111111111111111111111111111112`; // SOL mint address
   const outputMint = token.baseToken.address;
   console.log("Input Mint:", inputMint);
@@ -20,30 +22,33 @@ const submitBuySwap = async (token) => {
   const walletBalance = await connection.getBalance(wallet.payer.publicKey);
   console.log("Wallet Balance (lamports):", walletBalance);
 
-  const amount = Math.floor(walletBalance / 5);
+  if (walletBalance < 0.02 * 10 ** 9) {
+    console.error("Insufficient SOL balance. Minimum 0.02 SOL required.");
+    return;
+  }
+
+  const amount = Math.floor(walletBalance / 2);
   console.log("Amount to swap (lamports):", amount);
 
   try {
-    // Fetching quote
     console.log("Fetching swap quote...");
     const quoteResponse = await (
       await fetch(
-        `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}\
-&outputMint=${outputMint}\
-&amount=${amount}\
-&slippageBps=50`
+        `https://quote-api.jup.ag/v6/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=50`
       )
     ).json();
+
+    if (!quoteResponse || !quoteResponse.routePlan) {
+      console.error("Invalid quote response:", quoteResponse);
+      return;
+    }
     console.log("Quote Response:", JSON.stringify(quoteResponse, null, 2));
 
-    // Fetching swap transaction
     console.log("Fetching swap transaction...");
     const { swapTransaction } = await (
       await fetch("https://quote-api.jup.ag/v6/swap", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quoteResponse,
           userPublicKey: wallet.publicKey.toString(),
@@ -59,24 +64,25 @@ const submitBuySwap = async (token) => {
         }),
       })
     ).json();
-    console.log("Swap Transaction (Base64):", swapTransaction);
 
-    // Deserialize the transaction
+    console.log("Swap Transaction (Base64):", swapTransaction);
     console.log("Deserializing transaction...");
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
     const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-    console.log("Deserialized Transaction:", transaction);
 
-    // Sign the transaction
+    console.log("Adding Compute Budget Instructions...");
+    transaction.add(
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 1_400_000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1_295_080 })
+    );
+
     console.log("Signing transaction...");
     transaction.sign([wallet.payer]);
 
-    // Get the latest block hash
     console.log("Fetching latest block hash...");
     const latestBlockHash = await connection.getLatestBlockhash();
     console.log("Latest Block Hash:", latestBlockHash);
 
-    // Execute the transaction
     console.log("Sending transaction...");
     const rawTransaction = transaction.serialize();
     const txid = await connection.sendRawTransaction(rawTransaction, {
