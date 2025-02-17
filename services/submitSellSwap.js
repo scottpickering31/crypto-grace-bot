@@ -126,6 +126,8 @@ const submitSellSwap = async (token) => {
       maxRetries: 2,
     });
     console.log("Transaction ID:", txid);
+    const message3 = `Transaction ID: ${txid}`;
+    telegramMessage(message3);
 
     console.log("Confirming transaction...");
     await connection.confirmTransaction({
