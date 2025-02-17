@@ -8,7 +8,6 @@ const {
   storeWalletBalanceDBPost,
   storeWalletBalanceDBPNL,
 } = require("../integration/database/walletBalanceDB");
-const { apiRoutes } = require("../routes/apiRoutes");
 
 const waitForToken = async (mintAddress, retries = 10, interval = 5000) => {
   const mintPublicKey = new PublicKey(mintAddress);
@@ -23,7 +22,7 @@ const waitForToken = async (mintAddress, retries = 10, interval = 5000) => {
 
     if (tokenAccounts.value.length > 0) {
       console.log("Token found in wallet.");
-      return tokenAccounts.value[0].pubkey; // Return the token account public key
+      return tokenAccounts.value[0].pubkey;
     }
 
     console.log("Token not found. Retrying...");
@@ -42,7 +41,7 @@ const submitSellSwap = async (token) => {
 
   try {
     console.log("Waiting for token to appear in wallet...");
-    const tokenAccountPubKey = await waitForToken(inputMint); // Wait for the token to be available
+    const tokenAccountPubKey = await waitForToken(inputMint);
 
     const tokenBalance = await connection.getTokenAccountBalance(
       tokenAccountPubKey

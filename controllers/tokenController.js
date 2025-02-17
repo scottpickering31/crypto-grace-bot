@@ -73,7 +73,6 @@ const fetchTokenDetails = async (tokenAddress) => {
 };
 
 const startBot = async () => {
-  console.log("we have got to TokenController.js");
   const botStartTime = getBotStartTime();
 
   if (!botStartTime) {
@@ -92,8 +91,6 @@ const startBot = async () => {
     );
 
     const tokensToProcess = await processTokenData(uniqueTokens);
-
-    console.log("Tokens to process: THIS IS SECOND", tokensToProcess);
 
     if (tokensToProcess.length > 0) {
       for (const token of tokensToProcess) {
