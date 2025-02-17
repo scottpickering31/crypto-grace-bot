@@ -47,7 +47,7 @@ const processTokenData = async (filteredData) => {
 
   try {
     const [results] = await db.query(query, tokenAddresses);
-    console.log("DB Query Results:", results);
+    console.log("DB Query Results:", results + " This token is already in DB");
 
     const existingTokens = new Set(results.map((row) => row.token_address));
 
@@ -92,7 +92,6 @@ const startBot = async () => {
     );
 
     const tokensToProcess = await processTokenData(uniqueTokens);
-    console.log("DB Query Results:", tokensToProcess);
 
     console.log("Tokens to process: THIS IS SECOND", tokensToProcess);
 
