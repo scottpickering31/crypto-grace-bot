@@ -47,7 +47,7 @@ const processTokenData = async (filteredData) => {
 
   try {
     const [results] = await db.query(query, tokenAddresses);
-    console.log("DB Query Results:", results + " This token is already in DB");
+    console.log("DB Query Results, this token is already in DB: ", results);
 
     const existingTokens = new Set(results.map((row) => row.token_address));
 
