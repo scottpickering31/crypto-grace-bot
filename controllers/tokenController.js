@@ -82,7 +82,6 @@ const startBot = async () => {
 
   try {
     const filteredData = await fetchTokensData();
-    console.log(filteredData);
 
     // Deduplicate based on `tokenAddress`
     const uniqueTokens = filteredData.filter(
