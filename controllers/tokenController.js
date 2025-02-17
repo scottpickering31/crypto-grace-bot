@@ -122,9 +122,7 @@ const startBot = async () => {
           if (
             poolWithHighestLiquidity &&
             !poolWithHighestLiquidity.moonshot &&
-            time_difference <= 180 &&
-            poolWithHighestLiquidity.priceUsd > 0.000045 &&
-            poolWithHighestLiquidity.priceUsd < 0.000135
+            time_difference <= 180
           ) {
             const currentTime = new Date();
             const elapsedTime = Math.floor(
