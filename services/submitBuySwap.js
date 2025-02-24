@@ -53,8 +53,8 @@ const submitBuySwap = async (token) => {
           quoteResponse,
           userPublicKey: wallet.publicKey.toString(),
           wrapAndUnwrapSol: true,
-          dynamicComputeUnitLimit: true,
-          dynamicSlippage: { maxBps: 1000 },
+          computeUnitLimit: 1400000,
+          computeUnitPriceMicroLamports: 1295080,
           prioritizationFeeLamports: {
             priorityLevelWithMaxLamports: {
               maxLamports: 10000000,
@@ -69,12 +69,6 @@ const submitBuySwap = async (token) => {
     console.log("Deserializing transaction...");
     const swapTransactionBuf = Buffer.from(swapTransaction, "base64");
     const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-
-    console.log("Adding Compute Budget Instructions...");
-    transaction.add(
-      ComputeBudgetProgram.setComputeUnitLimit({ units: 1_400_000 }),
-      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1_295_080 })
-    );
 
     console.log("Signing transaction...");
     transaction.sign([wallet.payer]);
