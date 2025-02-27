@@ -53,14 +53,17 @@ const submitBuySwap = async (token) => {
           quoteResponse,
           userPublicKey: wallet.publicKey.toString(),
           wrapAndUnwrapSol: true,
-          computeUnitLimit: 1400000,
-          computeUnitPriceMicroLamports: 1295080,
+          dynamicComputeUnitLimit: true,
+          dynamicSlippage: { maxBps: 1000 },
           prioritizationFeeLamports: {
             priorityLevelWithMaxLamports: {
               maxLamports: 10000000,
               priorityLevel: "veryHigh",
             },
           },
+          // Add Compute Budget Instructions Here:
+          computeUnitLimit: 1_400_000,
+          computeUnitPriceMicroLamports: 1_295_080,
         }),
       })
     ).json();
